@@ -334,7 +334,7 @@ elif menu_opcion == "🔮 Evaluador de Citas":
                 nivel_txt = "🔴 Prioridad Alta - Alto Riesgo de Inasistencia"
                 accion_txt = f"📞 Realizar Llamada Telefónica Preventiva al paciente {nombre_paciente} ({telefono_paciente})"
                 class_bg = "bg-high"
-            elif prob_noshow >= 0.40:
+            elif prob_noshow >= 0.48:
                 nivel_txt = "🟡 Prioridad Media - Riesgo Moderado"
                 accion_txt = f"💬 Enviar Recordatorio Interactivo de WhatsApp al paciente {nombre_paciente}"
                 class_bg = "bg-medium"
@@ -510,6 +510,41 @@ elif menu_opcion == "🔄 Registro de Atención":
         else:
             st.success(f"🎉 Atención registrada localmente para {nombre_pac_atendido} (Cita #{fb_appointment_id}).")
 
+    st.markdown("---")
+    st.markdown("### 🧑‍⚕️ Panel de Auditoría y Validación Humana (Human-in-the-Loop)")
+    st.caption("Módulo de supervisión ética y control de sesgos exigido por el estándar de gobernanza del proyecto.")
+    
+    with st.form("form_human_validation"):
+        col_v1, col_v2 = st.columns(2)
+        with col_v1:
+            val_appointment_id = st.number_input("ID de Cita Auditada (AppointmentID)", min_value=1000000, value=5750001, step=1)
+            analyst_id = st.text_input("Código/ID de Analista de Admisión", value="ADM-102")
+        with col_v2:
+            dictamen_humano = st.selectbox("Dictamen de Validación Humana", [
+                "Alerta Confirmada (Riesgo Correcto)",
+                "Falso Positivo Rectificado (Paciente Confirmó Asistencia)",
+                "Excepción Médica / Emergencia Validada",
+                "Datos de Contacto Incompletos"
+            ])
+            observaciones_audit = st.text_area("Notas u Observaciones del Analista:", value="Validado telefónicamente con el paciente.")
+        
+        btn_validar_humano = st.form_submit_button("💾 Guardar Validación Humana en Supabase", use_container_width=True)
+        
+    if btn_validar_humano:
+        if supabase:
+            try:
+                val_data = {
+                    "appointment_id": val_appointment_id,
+                    "rescheduled_status": f"AUDITORIA [{analyst_id}]: {dictamen_humano}",
+                    "satisfaction_score": 5
+                }
+                supabase.schema("gold").table("feedback_loop").insert(val_data).execute()
+                st.success(f"✅ Validación registrada correctamente en Supabase para la cita #{val_appointment_id}.")
+            except Exception as e:
+                st.error(f"Error al guardar validación humana en Supabase: {e}")
+        else:
+            st.success(f"✅ Validación registrada en entorno local para la cita #{val_appointment_id}.")
+
 # ----------------------------------------------------------------------------
 # OPCIÓN 5: INFORMACIÓN INSTITUCIONAL, BUENAS PRÁCTICAS Y AYUDA
 # ----------------------------------------------------------------------------
@@ -560,3 +595,5 @@ elif menu_opcion == "ℹ️ Información y Ayuda":
             st.write("Ayuda al personal de admisión a predecir qué pacientes tienen mayor probabilidad de faltar a su cita médica, recomendando la mejor acción preventiva para asegurar su asistencia.")
         with st.expander("¿Quiénes deben usar esta aplicación?"):
             st.write("Está diseñada para el personal administrativo, recepcionistas y equipo médico de cualquier centro de salud.")
+
+            
