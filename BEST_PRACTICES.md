@@ -1,8 +1,3 @@
----
-
-*(Este archivo documenta las buenas prácticas de gobernanza, MLOps y código que exigió el docente durante el ciclo).*
-
-```markdown
 # 🛡️ Buenas Prácticas de Gobernanza, MLOps y Código - MediPredict AI
 
 En cumplimiento con los estándares técnicos exigidos en la asignatura **Proyecto Productivo IIIA**, el proyecto implementa los siguientes principios:
